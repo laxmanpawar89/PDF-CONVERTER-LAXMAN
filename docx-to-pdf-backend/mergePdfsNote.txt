@@ -1,0 +1,9 @@
+Backend currently does not implement /merge-pdfs.
+To support frontend 'Merge PDF', we need to add:
+- app.post('/merge-pdfs', upload.array('files'), async (req,res)=>{ ... })
+- Save uploaded PDFs to temp folder
+- Merge them into a single PDF using a PDF merger library (recommended) OR via an external tool
+- Return merged PDF as application/pdf.
+
+If you don't have a PDF merger dependency installed, we can add one (e.g., pdf-lib) to dependencies and implement merge in JS.
+

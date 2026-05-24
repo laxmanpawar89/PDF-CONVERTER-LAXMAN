@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF → JPG Converter</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>PDF → JPG / DOCX Converter</h1>
+      <p class="sub">Convert PDF pages to JPG images and (text-based) PDF to Word DOCX. JPG conversion runs fully in-browser.</p>
+    </header>
+
+    <section class="panel">
+      <label class="label" for="pdfInput">Choose a PDF file</label>
+      <input id="pdfInput" type="file" accept="application/pdf" />
+
+      <div style="height:12px"></div>
+
+      <label class="label" for="docxInput">Choose a DOCX file (to convert to PDF)</label>
+      <input id="docxInput" type="file" accept="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+
+      <div style="height:16px"></div>
+
+      <h2 class="h2" style="margin:0 0 10px 0;font-size:18px;">Merge</h2>
+
+      <div class="row">
+        <div class="field">
+          <label class="label" for="pdfMergeInput">Merge PDF (outputs one combined PDF)</label>
+          <input id="pdfMergeInput" type="file" accept="application/pdf" multiple />
+        </div>
+        <div class="field">
+          <label class="label" for="jpgMergeInput">Merge JPG (stacked output)</label>
+          <input id="jpgMergeInput" type="file" accept="image/jpeg" multiple />
+        </div>
+      </div>
+
+      <div class="row actions">
+        <button id="mergePdfBtn" class="btn secondary" type="button" disabled>Merge PDF</button>
+        <button id="mergeJpgBtn" class="btn secondary" type="button" disabled>Merge JPG (stacked)</button>
+      </div>
+
+
+      <div class="row">
+        <div class="field">
+          <label class="label" for="quality">JPG Quality (0.1 - 1)</label>
+          <input id="quality" type="number" step="0.1" min="0.1" max="1" value="0.92" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="scale">Render Scale (bigger = sharper, slower)</label>
+          <input id="scale" type="number" step="0.25" min="0.5" max="3" value="1.5" />
+        </div>
+      </div>
+
+      <div class="row actions">
+        <button id="convertJpgBtn" class="btn" type="button" disabled>Convert to JPG</button>
+        <button id="convertDocxBtn" class="btn secondary" type="button" disabled>Convert to DOCX (text)</button>
+        <button id="convertPdfFromDocxBtn" class="btn secondary" type="button" disabled>Convert DOCX to PDF</button>
+        <button id="clearBtn" class="btn secondary" type="button" disabled>Clear</button>
+      </div>
+
+
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="panel output">
+      <h2 class="h2">Output</h2>
+      <p class="muted">Converted JPGs will appear below. You can download each image.</p>
+      <div id="output" class="grid"></div>
+    </section>
+
+    <footer class="footer">
+      <p>
+        Uses <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noreferrer">PDF.js</a>
+        to render pages.
+      </p>
+    </footer>
+  </div>
+
+  <!-- PDF.js via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/dist/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
+  <script src="./first.js"></script>
+</body>
+</html>
+

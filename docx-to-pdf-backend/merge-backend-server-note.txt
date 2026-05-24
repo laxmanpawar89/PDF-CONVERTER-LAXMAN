@@ -1,0 +1,1 @@
+Merge operations are not yet implemented. Needs backend changes for merge-pdf (LibreOffice can merge by converting inputs to PDF pages then concatenating with PDF-lib or similar).

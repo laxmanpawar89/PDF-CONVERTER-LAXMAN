@@ -1,0 +1,19 @@
+Goal: make Merge PDF work (frontend calls POST http://localhost:3001/merge-pdfs)
+
+Backend currently lacks /merge-pdfs.
+
+Plan:
+1) Update docx-to-pdf-backend/server.js
+   - Add: app.post('/merge-pdfs', upload.array('files'), async (req,res) => { ... })
+   - Accept multiple PDFs from FormData field name 'files'
+2) Merge implementation options:
+   A) Use Node library: 'pdf-lib' (pure JS) OR 'hummusjs' / 'pdfkit' etc.
+   B) Best practical: pdf-lib (already works in JS, no external binaries)
+   - Use pdf-lib: load each PDF bytes, copy pages into a new PDF, save, return bytes.
+3) Add dependency to docx-to-pdf-backend/package.json: pdf-lib
+4) Restart backend server.
+
+Expected request/response:
+- Request: multipart/form-data with key 'files' containing PDF files
+- Response: application/pdf with merged PDF bytes
+
