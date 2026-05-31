@@ -127,7 +127,11 @@ async function convertPdfToJpg(file) {
   convertDocxBtn.disabled = false;
 }
 
+let docxConversionToken = 0;
+
 async function convertPdfToDocx(file) {
+  const myToken = ++docxConversionToken;
+
   clearOutput();
 
   const arrayBuffer = await file.arrayBuffer();
@@ -144,6 +148,8 @@ async function convertPdfToDocx(file) {
 
   const { Document, Packer, Paragraph, TextRun } = docx;
 
+  const yieldToUI = () => new Promise((r) => setTimeout(r, 0));
+
   setStatus(`Loaded "${file.name}". Pages: ${numPages}. Converting to DOCX (text-based)...`);
   convertJpgBtn.disabled = true;
   convertDocxBtn.disabled = true;
@@ -151,38 +157,56 @@ async function convertPdfToDocx(file) {
 
   const paras = [];
 
+  // Safety cap: prevents runaway DOCX size on PDFs with huge extracted strings
+  // (you can remove this cap if you always want full text)
+  const MAX_CHARS_PER_PAGE_TEXT = 50_000;
+
   for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+    if (myToken !== docxConversionToken) return; // cancelled by a new conversion
+
     setStatus(`Extracting text from page ${pageNum}/${numPages} ...`);
 
     const page = await pdf.getPage(pageNum);
-
     const textContent = await page.getTextContent();
     const strings = (textContent.items || []).map((it) => it.str).filter(Boolean);
 
     if (strings.length === 0) {
       paras.push(new Paragraph({ children: [new TextRun({ text: `Page ${pageNum}` })] }));
-      continue;
+    } else {
+      let text = strings.join(' ');
+      if (text.length > MAX_CHARS_PER_PAGE_TEXT) {
+        text = text.slice(0, MAX_CHARS_PER_PAGE_TEXT) + '... (truncated)';
+      }
+
+      paras.push(
+        new Paragraph({
+          children: [new TextRun({ text: `Page ${pageNum}`, bold: true })],
+        })
+      );
+      paras.push(new Paragraph({ children: [new TextRun({ text })] }));
     }
 
-    const text = strings.join(' ');
-    paras.push(
-      new Paragraph({
-        children: [new TextRun({ text: `Page ${pageNum}`, bold: true })],
-      })
-    );
-    paras.push(new Paragraph({ children: [new TextRun({ text })] }));
+    // Key fix: yield to the event loop so the browser can repaint + keep UI responsive
+    // (every page is fine; you can change to every 2-5 pages for slightly faster conversion)
+    await yieldToUI();
   }
+
+  if (myToken !== docxConversionToken) return; // cancelled
 
   const baseName = file.name.replace(/\.pdf$/i, '');
 
   const doc = new Document({
-    sections: [{
-      properties: {},
-      children: paras,
-    }],
+    sections: [
+      {
+        properties: {},
+        children: paras,
+      },
+    ],
   });
 
   const blob = await Packer.toBlob(doc);
+
+  if (myToken !== docxConversionToken) return; // cancelled
 
   const url = URL.createObjectURL(blob);
 
@@ -214,11 +238,12 @@ async function convertPdfToDocx(file) {
 
   outputEl.appendChild(card);
 
-  setStatus(`Done. Generated DOCX from extracted text.`);
+  setStatus('Done. Generated DOCX from extracted text.');
 
   convertJpgBtn.disabled = false;
   convertDocxBtn.disabled = false;
 }
+
 
 
 pdfInput.addEventListener('change', () => {
